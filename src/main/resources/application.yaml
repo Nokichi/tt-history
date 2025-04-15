@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: tt-history
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/tt_history
+    username: test
+    password: ${DB_PG_PWD}
+  rabbitmq:
+    addresses: localhost:5672
+    username: guest
+    password: ${RABBITMQ_PWD}
+    virtual-host: tt-host
+server:
+  port: ${APP_PORT:8083}
+app:
+  rabbitmq:
+    queue-tasks: history.tasks-queue
+    exchange: history-exchange
