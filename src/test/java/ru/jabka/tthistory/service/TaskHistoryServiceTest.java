@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.jabka.tthistory.exception.BadRequestException;
 import ru.jabka.tthistory.model.TaskData;
 import ru.jabka.tthistory.model.TaskHistory;
 import ru.jabka.tthistory.model.TaskStatus;
@@ -25,6 +26,113 @@ class TaskHistoryServiceTest {
 
     @InjectMocks
     private TaskHistoryService taskHistoryService;
+
+    @Test
+    void create_success() {
+        final TaskHistory taskHistory = TaskHistory.builder()
+                .id(1L)
+                .taskId(2L)
+                .data(new TaskData(
+                        "title",
+                        "description",
+                        TaskStatus.IN_PROGRESS,
+                        LocalDate.now(),
+                        3L))
+                .createdBy(4L)
+                .moment(LocalDateTime.now())
+                .build();
+        Mockito.when(historyRepository.insert(taskHistory)).thenReturn(taskHistory);
+        TaskHistory result = taskHistoryService.create(taskHistory);
+        Assertions.assertEquals(taskHistory, result);
+        Mockito.verify(historyRepository).insert(taskHistory);
+    }
+
+    @Test
+    void create_error_nullTaskHistory() {
+        final TaskHistory taskHistory = null;
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> taskHistoryService.create(taskHistory)
+        );
+        Assertions.assertEquals("Заполните данные истории задачи", exception.getMessage());
+        Mockito.verify(historyRepository, Mockito.never()).insert(Mockito.any());
+    }
+
+    @Test
+    void create_error_nullTaskId() {
+        final TaskHistory taskHistory = TaskHistory.builder()
+                .data(new TaskData(
+                        "title",
+                        "description",
+                        TaskStatus.IN_PROGRESS,
+                        LocalDate.now(),
+                        3L))
+                .createdBy(4L)
+                .moment(LocalDateTime.now())
+                .build();
+        ;
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> taskHistoryService.create(taskHistory)
+        );
+        Assertions.assertEquals("Заполните id задачи", exception.getMessage());
+        Mockito.verify(historyRepository, Mockito.never()).insert(Mockito.any());
+    }
+
+    @Test
+    void create_error_nullData() {
+        final TaskHistory taskHistory = TaskHistory.builder()
+                .taskId(2L)
+                .createdBy(4L)
+                .moment(LocalDateTime.now())
+                .build();
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> taskHistoryService.create(taskHistory)
+        );
+        Assertions.assertEquals("Заполните данные изменений задачи", exception.getMessage());
+        Mockito.verify(historyRepository, Mockito.never()).insert(Mockito.any());
+    }
+
+    @Test
+    void create_error_nullCreatedBy() {
+        final TaskHistory taskHistory = TaskHistory.builder()
+                .taskId(2L)
+                .data(new TaskData(
+                        "title",
+                        "description",
+                        TaskStatus.IN_PROGRESS,
+                        LocalDate.now(),
+                        3L))
+                .moment(LocalDateTime.now())
+                .build();
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> taskHistoryService.create(taskHistory)
+        );
+        Assertions.assertEquals("Заполните id автора изменений задачи", exception.getMessage());
+        Mockito.verify(historyRepository, Mockito.never()).insert(Mockito.any());
+    }
+
+    @Test
+    void create_error_nullMoment() {
+        final TaskHistory taskHistory = TaskHistory.builder()
+                .taskId(2L)
+                .data(new TaskData(
+                        "title",
+                        "description",
+                        TaskStatus.IN_PROGRESS,
+                        LocalDate.now(),
+                        3L))
+                .createdBy(4L)
+                .build();
+        final BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> taskHistoryService.create(taskHistory)
+        );
+        Assertions.assertEquals("Заполните время изменений задачи", exception.getMessage());
+        Mockito.verify(historyRepository, Mockito.never()).insert(Mockito.any());
+    }
 
     @Test
     void getByTaskId_success() {
