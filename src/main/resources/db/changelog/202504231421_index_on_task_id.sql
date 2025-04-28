@@ -1,0 +1,1 @@
+CREATE INDEX idx_task_history_task_id ON tt.task_history (task_id);
